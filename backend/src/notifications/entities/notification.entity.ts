@@ -24,7 +24,7 @@ export class Notification {
   @Column()
   message: string;
 
-  @Column({ default: false })
+  @Column({ name: 'is_read', default: false })
   isRead: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
