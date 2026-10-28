@@ -14,7 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import type { Express } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -38,6 +38,19 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['name', 'price', 'category'],
+      properties: {
+        name: { type: 'string', example: 'Wireless Headphones' },
+        description: { type: 'string', example: 'Over-ear, noise cancelling' },
+        price: { type: 'string', example: '49.99', description: 'Decimal price as a string' },
+        category: { type: 'string', example: 'electronics' },
+        image: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   @ApiCreatedResponse({ description: 'Product created' })
   @UseInterceptors(
     FileInterceptor('image', {
