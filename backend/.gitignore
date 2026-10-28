@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+
+.env
+*.local
+
+uploads/products/*
+!uploads/products/.gitkeep
+
+npm-debug.log*
+.DS_Store

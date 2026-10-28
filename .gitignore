@@ -1,0 +1,24 @@
+# Office/reference files (not part of the deliverable)
+*.pptx
+*.jpg
+*.jpeg
+*.png
+
+# Dependencies & build output (any nested project)
+**/node_modules/
+**/dist/
+**/coverage/
+**/*.tsbuildinfo
+
+# Environment & secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Uploaded files
+**/uploads/products/*
+!**/uploads/products/.gitkeep
+
+# OS/editor
+**/.DS_Store
+**/npm-debug.log*
