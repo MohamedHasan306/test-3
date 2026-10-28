@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: ecommerce
     ports:
       - "5432:5432"
+      - "5433:5432" # extra port for local tooling, in case 5432 is taken by a native Postgres install
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
