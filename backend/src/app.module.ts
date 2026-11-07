@@ -14,6 +14,8 @@ import { Product } from './products/entities/product.entity.js';
 import { Order } from './orders/entities/order.entity.js';
 import { OrderItem } from './orders/entities/order-item.entity.js';
 import { Notification } from './notifications/entities/notification.entity.js';
+import { WarehouseModule } from './warehouses/warehouse.module.js';
+import { Warehouse } from './warehouses/entities/warehouse.entity.js';
 
 @Module({
   imports: [
@@ -29,8 +31,9 @@ import { Notification } from './notifications/entities/notification.entity.js';
         username: configService.getOrThrow<string>('DATABASE_USER'),
         password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
         database: configService.getOrThrow<string>('DATABASE_NAME'),
-        entities: [User, Product, Order, OrderItem, Notification],
-        synchronize: configService.get<string>('NODE_ENV', 'development') !== 'production',
+        entities: [User, Product, Order, OrderItem, Notification, Warehouse],
+        synchronize:
+          configService.get<string>('NODE_ENV', 'development') !== 'production',
       }),
     }),
 
@@ -45,6 +48,7 @@ import { Notification } from './notifications/entities/notification.entity.js';
 
     UsersModule,
     ProductsModule,
+    WarehouseModule,
     OrdersModule,
     NotificationsModule,
   ],

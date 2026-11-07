@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from './entities/product.entity.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { QueryProductsDto } from './dto/query-products.dto.js';
+import { WarehouseService } from '../warehouses/warehouse.service.js';
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -18,17 +19,39 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    private readonly dataSource: DataSource,
+    private readonly warehouseService: WarehouseService,
   ) {}
 
-  create(dto: CreateProductDto, imageUrl: string | null): Promise<Product> {
-    const product = this.productsRepository.create({
-      name: dto.name,
-      description: dto.description,
-      price: dto.price,
-      category: dto.category,
-      imageUrl,
+  async create(
+    dto: CreateProductDto,
+    imageUrl: string | null,
+  ): Promise<Product> {
+    return this.dataSource.transaction(async (manager) => {
+      const productRepository = manager.getRepository(Product);
+
+      const product = productRepository.create({
+        name: dto.name,
+        description: dto.description,
+        price: dto.price,
+        category: dto.category,
+        imageUrl,
+      });
+
+      const savedProduct = await productRepository.save(product);
+
+      const savedWarehouse = await this.warehouseService.create(
+        {
+          quantity: dto.quantity,
+        },
+        savedProduct.id,
+        manager,
+      );
+
+      savedProduct.warehouse = savedWarehouse;
+
+      return savedProduct;
     });
-    return this.productsRepository.save(product);
   }
 
   async findAll(query: QueryProductsDto): Promise<PaginatedResult<Product>> {
@@ -52,9 +75,9 @@ export class ProductsService {
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productsRepository.findOne({ where: { id } });
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
+
+    if (!product) throw new NotFoundException('Product not found');
+
     return product;
   }
 }

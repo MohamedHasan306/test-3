@@ -14,7 +14,14 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import type { Express } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -45,9 +52,14 @@ export class ProductsController {
       properties: {
         name: { type: 'string', example: 'Wireless Headphones' },
         description: { type: 'string', example: 'Over-ear, noise cancelling' },
-        price: { type: 'string', example: '49.99', description: 'Decimal price as a string' },
+        price: {
+          type: 'string',
+          example: '49.99',
+          description: 'Decimal price as a string',
+        },
         category: { type: 'string', example: 'electronics' },
         image: { type: 'string', format: 'binary' },
+        quantity: { type: 'number', example: 10 },
       },
     },
   })
@@ -63,20 +75,30 @@ export class ProductsController {
       limits: { fileSize: MAX_IMAGE_SIZE_BYTES },
       fileFilter: (_req, file, callback) => {
         if (!IMAGE_MIME_TYPES.has(file.mimetype)) {
-          callback(new BadRequestException('Only JPEG, PNG or WEBP images are allowed'), false);
+          callback(
+            new BadRequestException(
+              'Only JPEG, PNG or WEBP images are allowed',
+            ),
+            false,
+          );
           return;
         }
         callback(null, true);
       },
     }),
   )
-  create(@Body() dto: CreateProductDto, @UploadedFile() image?: Express.Multer.File) {
+  create(
+    @Body() dto: CreateProductDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
     const imageUrl = image ? `/uploads/products/${image.filename}` : null;
     return this.productsService.create(dto, imageUrl);
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Paginated list of products, optionally filtered by category' })
+  @ApiOkResponse({
+    description: 'Paginated list of products, optionally filtered by category',
+  })
   findAll(@Query() query: QueryProductsDto) {
     return this.productsService.findAll(query);
   }

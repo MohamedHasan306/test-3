@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Warehouse } from '../../warehouses/entities/warehouse.entity.js';
 
 @Entity('products')
 export class Product {
@@ -24,6 +26,11 @@ export class Product {
   @Index()
   @Column()
   category: string;
+
+  @OneToOne(() => Warehouse, (warehouse) => warehouse.product, {
+    onDelete: 'CASCADE',
+  })
+  warehouse: Warehouse;
 
   @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string | null;

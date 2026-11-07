@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumberString, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Wireless Headphones' })
@@ -20,4 +28,10 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(60)
   category: string;
+
+  @ApiProperty({ type: Number, example: 10 })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  quantity: number;
 }
