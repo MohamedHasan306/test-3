@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -18,9 +18,14 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @ApiHeader({ name: 'Idempotency-Key', required: false, description: 'Reuse a UUID when retrying the same checkout' })
   @ApiCreatedResponse({ description: 'Order created' })
-  create(@CurrentUser() currentUser: AuthenticatedUser, @Body() dto: CreateOrderDto) {
-    return this.ordersService.create(currentUser.id, dto);
+  create(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Body() dto: CreateOrderDto,
+    @Headers('idempotency-key') key?: string,
+  ) {
+    return this.ordersService.create(currentUser.id, dto, key);
   }
 
   @Get()

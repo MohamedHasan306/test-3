@@ -3,6 +3,7 @@ name: ecommerce-platform
 services:
   db:
     image: postgres:16-alpine
+  
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -24,6 +25,7 @@ services:
       context: ./backend
     restart: unless-stopped
     environment:
+      INVENTORY_GRPC_URL: inventory-service:50051   
       NODE_ENV: development
       PORT: 3000
       DATABASE_HOST: db
@@ -41,6 +43,48 @@ services:
       db:
         condition: service_healthy
 
+  inventory-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_dev_password
+      POSTGRES_DB: inventory
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - inventory_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U inventory_user -d inventory
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  inventory-service:
+    build:
+      context: ../inventory-service
+      dockerfile: DockerFile
+    env_file:
+      - ../inventory-service/.env
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      DATABASE_HOST: inventory-db
+      DATABASE_PORT: "5432"
+      DATABASE_USER: inventory_user
+      DATABASE_PASSWORD: inventory_dev_password
+      DATABASE_NAME: inventory
+    ports:
+      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:50051:50051"
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    
+
 volumes:
   db_data:
   uploads_data:
+  inventory_postgres_data:

@@ -1,3 +1,4 @@
+import { CheckoutAttempt } from './orders/entities/checkout-attempt.entity.js';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -31,14 +32,14 @@ import { Warehouse } from './warehouses/entities/warehouse.entity.js';
         username: configService.getOrThrow<string>('DATABASE_USER'),
         password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
         database: configService.getOrThrow<string>('DATABASE_NAME'),
-        entities: [User, Product, Order, OrderItem, Notification, Warehouse],
+        entities: [User, Product, Order, OrderItem, Notification, Warehouse, CheckoutAttempt],
         synchronize:
           configService.get<string>('NODE_ENV', 'development') !== 'production',
       }),
     }),
 
     ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60_000, limit: 60 }],
+      throttlers: [{ ttl: 60_000, limit: 60000 }],
     }),
 
     ServeStaticModule.forRoot({

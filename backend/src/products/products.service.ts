@@ -5,6 +5,7 @@ import { Product } from './entities/product.entity.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { QueryProductsDto } from './dto/query-products.dto.js';
 import { WarehouseService } from '../warehouses/warehouse.service.js';
+import { InventoryClientService } from '../inventory-client/inventory-client.service.js';
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -21,7 +22,8 @@ export class ProductsService {
     private readonly productsRepository: Repository<Product>,
     private readonly dataSource: DataSource,
     private readonly warehouseService: WarehouseService,
-  ) {}
+    private readonly inventoryClient: InventoryClientService,
+  ) { }
 
   async create(
     dto: CreateProductDto,
@@ -73,11 +75,22 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: string): Promise<Product> {
-    const product = await this.productsRepository.findOne({ where: { id } });
+  async findOne(
+    id: string,
+  ): Promise<Product & { available: number }> {
+    const product = await this.productsRepository.findOne({
+      where: { id },
+    });
 
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
 
-    return product;
+    const stock = await this.inventoryClient.getQuantity(product.id);
+
+    return {
+      ...product,
+      available: stock.available,
+    };
   }
 }
